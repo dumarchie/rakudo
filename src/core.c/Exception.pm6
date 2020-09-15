@@ -863,6 +863,20 @@ my class X::Comp::BeginTime does X::Comp {
     }
 }
 
+my class X::Coerce is Exception {
+    has str $.target-type;
+    has str $.from-type;
+    method message() {
+        "from " ~ $!from-type ~ " into " ~ $!target-type
+    }
+}
+
+my class X::Coerce::Impossible is X::Coerce {
+    method message() {
+        "Impossible coercion " ~ callsame
+    }
+}
+
 # XXX a hack for getting line numbers from exceptions from the metamodel
 my class X::Comp::AdHoc is X::AdHoc does X::Comp {
     method is-compile-time(--> True) { }
@@ -2935,6 +2949,10 @@ nqp::bindcurhllsym('P6EX', BEGIN nqp::hash(
   'X::TypeCheck::Return',
   -> Mu $got is raw, Mu $expected is raw {
       X::TypeCheck::Return.new(:$got, :$expected).throw;
+  },
+  'X::Coerce::Impossible',
+  -> str $target-type is raw, str $from-type is raw {
+      X::Coerce::Impossible.new(:$target-type, :$from-type).throw;
   },
   'X::Assignment::RO',
   -> $value is raw = "value" {
